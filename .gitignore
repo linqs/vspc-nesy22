@@ -1,0 +1,42 @@
+# System files #
+################
+.DS_Store
+
+# Compiled sources #
+####################
+target
+classpath.out
+dependency-reduced-pom.xml
+*.jar
+
+# IDE metadata #
+####################
+.classpath
+.project
+.settings
+.idea
+.vscode
+
+# Editor temporary #
+####################
+*.swp
+
+# Python #
+##########
+__pycache__
+
+# Data #
+########
+*.zip
+ml-1m
+data
+
+# Experiment Output #
+#####################
+*-learned.psl
+out*.txt
+out*.err
+sort*.txt
+inferred-predicates/
+results/
+.setup-complete

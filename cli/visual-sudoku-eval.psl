@@ -1,0 +1,9 @@
+NeuralClassifier(Image, X, Y, Num) = PredictedNumber(Image, X, Y, Num) .
+
+PredictedNumber(Image, X, +Y, Num) / |Y| <= RowViolation(Image, X, Num) + 0.25 .
+PredictedNumber(Image, +X, Y, Num) / |X| <= ColViolation(Image, Y, Num) + 0.25 .
+RowViolation(Image, X, +Num1) + ColViolation(Image, Y, +Num2) <= Violation(Image) .
+
+1.0: RowViolation(Image, X, Num) = 0.0 ^2
+1.0: ColViolation(Image, X, Num) = 0.0 ^2
+1.0: Violation(Image) = 0.0 ^2
