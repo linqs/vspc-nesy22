@@ -44,12 +44,12 @@ function run_psl() {
 }
 
 function run() {
-    local originalParamPath=$(grep "digit_model_untrained_tf" "${CLI_DIR}/visual-sudoku-learn.data" | sed "s#^.*data/${EXPERIMENT_NAME}/\(.*\)/learn.*\$#\1#")
+    local originalParamPath=$(grep "digit_model_untrained_tf" "${CLI_DIR}/visual-sudoku-learn.data" | sed "s#^.*data/${EXPERIMENT_NAME}/\(.*\)/digit_model_untrained_tf.*\$#\1#")
 
     # Splits are already specified in the data path, but do this loop so we complete full splits first.
     for split in ${SPLITS} ; do
-        for optionsPath in $(find data/visual-sudoku-experiment -name options.json | grep "split::${split}/learn" | sort) ; do
-            local baseParamPath=$(dirname "${optionsPath}" | sed "s#data/${EXPERIMENT_NAME}/##" | xargs dirname)
+        for optionsPath in $(find "${DATA_DIR}" -name options.json | grep "split::${split}" | sort) ; do
+            local baseParamPath=$(dirname "${optionsPath}" | sed "s#^.*data/${EXPERIMENT_NAME}/##")
             local paramPath="${baseParamPath}"
             local options="${ADDITIONAL_PSL_OPTIONS}"
 
@@ -59,8 +59,7 @@ function run() {
             local outDir="${BASE_OUT_DIR}/experiment::${EXPERIMENT_NAME}/method::neupsl/${paramPath}"
 
             echo "Running '${outDir}'."
-            # TEST
-            # run_psl "${outDir}" "${options}"
+            run_psl "${outDir}" "${options}"
 
             # Reset the .data files.
             sed -i "s#${baseParamPath}#${originalParamPath}#" "${CLI_DIR}/visual-sudoku-"{learn,eval}".data"

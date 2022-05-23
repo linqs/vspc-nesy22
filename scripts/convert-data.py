@@ -16,9 +16,8 @@ import tensorflow
 THIS_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 DEFAULT_DATA_DIR = os.path.join(THIS_DIR, '..', 'data', 'vspc')
 
-SUBPATH_FORMAT = os.path.join('dimension::{:01d}', 'datasets::{:s}', 'strategy::{:s}',
-        'numTrain::{:05d}', 'numTest::{:05d}', 'numValid::{:05d}',
-        'corruptChance::{:04.2f}', 'overlap::{:04.2f}', 'split::{:s}')
+UNSUPPORTED_STRATEGIES = ['r_puzzle', 'r_cell']
+
 OPTIONS_FILENAME = 'options.json'
 
 CELL_LABELS_FILENAME = 'cell_labels.txt'
@@ -121,6 +120,9 @@ def writeData(outDir, dimension, rawPuzzleImages, rawPuzzleCellLabels, rawPuzzle
         for cellLabel in cellLabels:
             if (cellLabel not in labelMap):
                 labelMap[cellLabel] = len(labelMap)
+
+    if (dimension != len(labelMap)):
+        raise ValueError("Cannot convert data that does not have (|labels| == dimension). |labels|: %d, dimension: %d. dir:' %s'." % (len(labelMap), dimension, outDir))
 
     writeFile(os.path.join(outDir, LABEL_MAP_FILENAME), labelMap.items())
     writeFile(os.path.join(outDir, DIGIT_LABELS_FILENAME), [[i] for i in range(len(labelMap))])
@@ -239,6 +241,13 @@ def convertDir(sourceDir, baseSourceDir, baseOutDir, force):
         print("Found existing PSL options file, but forcing over it. " + optionsPath)
         shutil.rmtree(outDir)
 
+    with open(os.path.join(sourceDir, OPTIONS_FILENAME), 'r') as file:
+        dataOptions = json.load(file)
+
+    if (dataOptions['strategy'] in UNSUPPORTED_STRATEGIES):
+        print('Strategy ' + dataOptions['strategy'] + ' not supported, skipping: ' + optionsPath)
+        return
+
     print("Generating data defined in: " + optionsPath)
     os.makedirs(outDir, exist_ok = True)
 
@@ -257,11 +266,8 @@ def convertDir(sourceDir, baseSourceDir, baseOutDir, force):
     writeData(os.path.join(outDir, 'eval'), dimension,
             rawPuzzleImages['test'], rawPuzzleCellLabels['test'], rawPuzzleLabels['test'], pinnedLabelMap)
 
-    with open(os.path.join(sourceDir, OPTIONS_FILENAME), 'r') as file:
-        options = json.load(file)
-
     options = {
-        'dataOptions': options,
+        'dataOptions': dataOptions,
         'timestamp': str(datetime.datetime.now()),
         'generator': os.path.basename(os.path.realpath(__file__)),
     }
