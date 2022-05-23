@@ -40,3 +40,5 @@ sort*.txt
 inferred-predicates/
 results/
 .setup-complete
+
+/results*

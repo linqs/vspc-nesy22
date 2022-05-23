@@ -134,7 +134,7 @@ def loadData(method, dataDir):
     return trainFeatures, trainLabels, testFeatures, testLabels
 
 def runBaseline(method, baseDataDir, dataDir, baseOutDir, force):
-    outDir = dataDir.replace(baseDataDir, os.path.join(baseOutDir, 'method::' + method))
+    outDir = dataDir.replace(baseDataDir, os.path.join(baseOutDir, 'experiment::' + EXPERIMENT, 'method::' + method))
     optionsPath = os.path.join(outDir, OUT_FILENAME)
 
     if (os.path.isfile(optionsPath)):
