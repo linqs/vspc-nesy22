@@ -8,20 +8,20 @@ predicates:
         - open
         - modeltype: NeuralModel
         - config:
-            features: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_digit_features.txt
-            model: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/digit_model_untrained_tf
-            labels: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/digit_labels.txt
+            features: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_digit_features.txt
+            model: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/digit_model_untrained_tf
+            labels: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/digit_labels.txt
             mirror: PredictedNumber
 
 observations:
-    FirstPuzzle: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/first_positive_puzzle.txt
+    FirstPuzzle: ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/first_positive_puzzle.txt
 
 targets:
-    PredictedNumber : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_digit_targets.txt
-    NeuralClassifier : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_digit_targets.txt
-    Violation : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_violation_targets.txt
-    RowViolation : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_row_col_violation_targets.txt
-    ColViolation : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_row_col_violation_targets.txt
+    PredictedNumber : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_digit_targets.txt
+    NeuralClassifier : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_digit_targets.txt
+    Violation : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_violation_targets.txt
+    RowViolation : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_row_col_violation_targets.txt
+    ColViolation : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_row_col_violation_targets.txt
 
 truth:
-    PredictedNumber : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::00/learn/positive_digit_truth.txt
+    PredictedNumber : ../data/vspc/dimension::4/datasets::mnist/strategy::simple/numTrain::00100/numTest::00100/numValid::00100/corruptChance::0.50/overlap::0.00/split::01/learn/positive_digit_truth.txt
