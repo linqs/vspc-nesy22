@@ -16,7 +16,7 @@ import tensorflow
 THIS_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 DEFAULT_DATA_DIR = os.path.join(THIS_DIR, '..', 'data', 'vspc')
 
-UNSUPPORTED_STRATEGIES = ['r_puzzle', 'r_cell']
+UNSUPPORTED_STRATEGIES = ['r_puzzle', 'r_cell', 'transfer']
 
 OPTIONS_FILENAME = 'options.json'
 
