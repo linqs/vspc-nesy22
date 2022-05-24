@@ -34,7 +34,8 @@ DIGIT_FEATURES_FILENAME = 'digit_features.txt'
 DIGIT_LABELS_FILENAME = 'digit_labels.txt'
 DIGIT_TARGETS_FILENAME = 'digit_targets.txt'
 DIGIT_TRUTH_FILENAME = 'digit_truth.txt'
-DIGIT_MAPPED_TRUTH_FILENAME = 'digit_mapped_truth.txt'
+
+DIGIT_PINNED_TRUTH_FILENAME = 'positive_digit_pinned_truth.txt'
 
 PUZZLE_POSITIVE_FIRST_ID_FILENAME = 'first_positive_puzzle.txt'
 
@@ -111,43 +112,40 @@ def buildDigitNetwork(dimension):
 
     return wrapper
 
-def writeData(outDir, dimension, rawPuzzleImages, rawPuzzleCellLabels, rawPuzzleLabels, pinnedLabelMap = None):
+def writeData(outDir, dimension, rawPuzzleImages, rawPuzzleCellLabels, rawPuzzleLabels, labelMap = None):
     os.makedirs(outDir, exist_ok = True)
 
     # Map all labels to ints for PSL.
-    labelMap = {}
-    for cellLabels in rawPuzzleCellLabels:
-        for cellLabel in cellLabels:
-            if (cellLabel not in labelMap):
-                labelMap[cellLabel] = len(labelMap)
+    # The first row of the first positive train puzzle will ALWAYS be [0, 1, 2, 3].
+    # Other splits will use the label mapping from train.
+    if (labelMap is None):
+        firstPositivePuzzle = None
+        labelMap = {}
+        digitPinnedTruth = []
 
-    if (dimension != len(labelMap)):
-        raise ValueError("Cannot convert data that does not have (|labels| == dimension). |labels|: %d, dimension: %d. dir:' %s'." % (len(labelMap), dimension, outDir))
+        for puzzleId in range(len(rawPuzzleLabels)):
+            if (rawPuzzleLabels[puzzleId] != PUZZLE_LABEL_POSITIVE):
+                continue
 
-    writeFile(os.path.join(outDir, LABEL_MAP_FILENAME), labelMap.items())
-    writeFile(os.path.join(outDir, DIGIT_LABELS_FILENAME), [[i] for i in range(len(labelMap))])
-
-    # The first positive puzzle will have its first row pinned to specific classes.
-    # We also need to build a map to keep track of the labels that were pinned.
-    # In the split the map is created in, it will have no change, but eval will get the same mapping as learn.
-
-    firstPositivePuzzle = None
-    tempPinnedLabelMap = {}
-
-    for puzzleId in range(len(rawPuzzleLabels)):
-        if (rawPuzzleLabels[puzzleId] == PUZZLE_LABEL_POSITIVE):
             firstPositivePuzzle = puzzleId
 
             for col in range(dimension):
-                tempPinnedLabelMap[rawPuzzleCellLabels[puzzleId][col]] = col
+                labelMap[rawPuzzleCellLabels[puzzleId][col]] = len(labelMap)
+
+                for label in range(dimension):
+                    digitPinnedTruth.append([puzzleId, 0, col, label, int(col == label)])
 
             break
-    assert(firstPositivePuzzle is not None)
+        assert(firstPositivePuzzle is not None)
 
-    if (pinnedLabelMap is None):
-        pinnedLabelMap = tempPinnedLabelMap
+        if (dimension != len(labelMap)):
+            raise ValueError("Cannot convert data that does not have (|labels| == dimension). |labels|: %d, dimension: %d. dir:' %s'." % (len(labelMap), dimension, outDir))
 
-    writeFile(os.path.join(outDir, PUZZLE_POSITIVE_FIRST_ID_FILENAME), [[firstPositivePuzzle]])
+        writeFile(os.path.join(outDir, DIGIT_PINNED_TRUTH_FILENAME), digitPinnedTruth)
+        writeFile(os.path.join(outDir, PUZZLE_POSITIVE_FIRST_ID_FILENAME), [[firstPositivePuzzle]])
+
+    writeFile(os.path.join(outDir, DIGIT_LABELS_FILENAME), [[i] for i in range(dimension)])
+    writeFile(os.path.join(outDir, LABEL_MAP_FILENAME), labelMap.items())
 
     # Write out two sets of data: all data and only positive puzzles.
     puzzleSets = [
@@ -194,7 +192,6 @@ def writeData(outDir, dimension, rawPuzzleImages, rawPuzzleCellLabels, rawPuzzle
 
         digitTargets = []
         digitTruth = []
-        digitMappedTruth = []
 
         for puzzleId in range(len(rawPuzzleLabels)):
             if (not labelCheck(rawPuzzleLabels[puzzleId])):
@@ -209,14 +206,10 @@ def writeData(outDir, dimension, rawPuzzleImages, rawPuzzleCellLabels, rawPuzzle
                         digitTargets.append([puzzleId, row, col, label])
                         digitTruth.append([puzzleId, row, col, label, int(labelMap[rawLabel] == label)])
 
-                        if (rawLabel in pinnedLabelMap):
-                            digitMappedTruth.append([puzzleId, row, col, label, int(pinnedLabelMap[rawLabel] == label)])
-
         writeFile(os.path.join(outDir, prefix + DIGIT_TARGETS_FILENAME), digitTargets)
         writeFile(os.path.join(outDir, prefix + DIGIT_TRUTH_FILENAME), digitTruth)
-        writeFile(os.path.join(outDir, prefix + DIGIT_MAPPED_TRUTH_FILENAME), digitMappedTruth)
 
-    return pinnedLabelMap
+    return labelMap
 
 def readSourceData(sourceDir):
     puzzleImages = {}
@@ -253,7 +246,7 @@ def convertDir(sourceDir, baseSourceDir, baseOutDir, force):
 
     rawPuzzleImages, rawPuzzleCellLabels, rawPuzzleLabels = readSourceData(sourceDir)
 
-    dimension = int(math.sqrt(len(rawPuzzleCellLabels['train'][0])))
+    dimension = dataOptions['dimension']
     assert(dimension ** 2 == len(rawPuzzleCellLabels['train'][0]))
 
     modelWrapper = buildDigitNetwork(dimension)
@@ -261,10 +254,10 @@ def convertDir(sourceDir, baseSourceDir, baseOutDir, force):
             os.path.join(outDir, UNTRAINED_DIGIT_MODEL_H5_FILENAME),
             os.path.join(outDir, UNTRAINED_DIGIT_MODEL_TF_DIRNAME))
 
-    pinnedLabelMap = writeData(os.path.join(outDir, 'learn'), dimension,
+    labelMap = writeData(os.path.join(outDir, 'learn'), dimension,
             rawPuzzleImages['train'], rawPuzzleCellLabels['train'], rawPuzzleLabels['train'])
     writeData(os.path.join(outDir, 'eval'), dimension,
-            rawPuzzleImages['test'], rawPuzzleCellLabels['test'], rawPuzzleLabels['test'], pinnedLabelMap)
+            rawPuzzleImages['test'], rawPuzzleCellLabels['test'], rawPuzzleLabels['test'], labelMap)
 
     options = {
         'dataOptions': dataOptions,

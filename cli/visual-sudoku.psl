@@ -2,43 +2,43 @@
 
 # Pin the first row of the first puzzle to known classes.
 
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '1') = 1.0
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '2') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '3') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '4') = 0.0 .
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '0') = 1.0
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '1') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '2') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '0', '3') = 0.0 .
 
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '1') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '2') = 1.0
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '3') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '4') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '0') = 0.0 .
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '1') = 1.0
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '2') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '1', '3') = 0.0 .
 
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '1') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '2') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '3') = 1.0
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '4') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '0') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '1') = 0.0 .
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '2') = 1.0
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '2', '3') = 0.0 .
 
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '1') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '2') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '3') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '4') = 1.0
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '0') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '1') = 0.0 .
+     0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '2') = 0.0 .
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '0', '3', '3') = 1.0
 
 # By pinning the first row, the second row (that shares a block) is easier.
 
+0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '0', '0') = 0.0 .
 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '0', '1') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '0', '2') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '0', '3') + NeuralClassifier(Puzzle, '1', '0', '4') = 1.0
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '0', '2') + NeuralClassifier(Puzzle, '1', '0', '3') = 1.0
 
+0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '1', '0') = 0.0 .
 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '1', '1') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '1', '2') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '1', '3') + NeuralClassifier(Puzzle, '1', '1', '4') = 1.0
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '1', '2') + NeuralClassifier(Puzzle, '1', '1', '3') = 1.0
 
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '2', '3') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '2', '4') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '2', '1') + NeuralClassifier(Puzzle, '1', '2', '2') = 1.0
+0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '2', '0') = 0.0 .
+0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '2', '1') = 0.0 .
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '2', '2') + NeuralClassifier(Puzzle, '1', '2', '3') = 1.0
 
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '3', '3') = 0.0 .
-0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '3', '4') = 0.0 .
-1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '3', '1') + NeuralClassifier(Puzzle, '1', '3', '2') = 1.0
+0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '3', '0') = 0.0 .
+0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '3', '1') = 0.0 .
+1.0: 0.0 * FirstPuzzle(Puzzle) + NeuralClassifier(Puzzle, '1', '3', '2') + NeuralClassifier(Puzzle, '1', '3', '3') = 1.0
 
 # Per-cell.
 1.0: NeuralClassifier(Puzzle, X, Y, +Number) = 1.0

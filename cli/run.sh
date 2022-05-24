@@ -25,7 +25,7 @@ readonly ADDITIONAL_PSL_OPTIONS="\
     -D modelpredicate.initialiterations=0 \
     -D modelpredicate.iterations=1 \
     -D admmreasoner.computeperiod=100 \
-    -D admmreasoner.maxiterations=100 \
+    -D admmreasoner.maxiterations=500 \
     -D admmreasoner.epsilonabs=1.0e-6 \
     -D admmreasoner.epsilonrel=1.0e-4 \
     -D reasoner.tolerance=1.0e-6 \
@@ -42,7 +42,7 @@ readonly ADDITIONAL_WL_OPTIONS="--learn Energy \
     -D weightlearning.fixnegativepriors=true \
     -D wla.gradientdescent.extension=EXPONENTIATED_GRADIENT \
     -D wla.gradientdescent.stepsize=1.0e-14 \
-    -D wla.gradientdescent.numsteps=500 \
+    -D wla.gradientdescent.numsteps=1000 \
     -D wla.gradientdescent.runfulliterations=true \
     -D modelpredicate.batchsize=100000 \
 "
@@ -57,6 +57,7 @@ readonly ADDITIONAL_EVAL_OPTIONS="\
     -D admmreasoner.maxiterations=100 \
     -D modelpredicate.initialiterations=0 \
     -D modelpredicate.iterations=0 \
+    -D modelpredicate.discretizeoutput=true \
     -D modelpredicate.discretizeoutput=true \
 "
 
