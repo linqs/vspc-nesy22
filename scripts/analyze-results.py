@@ -21,19 +21,25 @@ BASE_QUERY = '''
     WHERE puzzleAccuracy IS NOT NULL
 '''
 
+GROUP_COLS = [
+    'method',
+    'experiment',
+    'dimension',
+    'datasets',
+    'strategy',
+    'numTrain',
+    'numTest',
+    'numValid',
+    'corruptChance',
+    'overlap',
+]
+
+GROUP_COLS_STR = lambda prefix: ', '.join([prefix + '.' + col for col in GROUP_COLS])
+
 # Aggregate over splits and iterations.
 AGGREGATE_QUERY = '''
     SELECT
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap,
+        ''' + GROUP_COLS_STR('S') + ''',
         COUNT(S.split) AS numSplits,
         AVG(S.digitAccuracy) AS digitAccuracy_mean,
         STDEV(S.digitAccuracy) AS digitAccuracy_std,
@@ -46,43 +52,16 @@ AGGREGATE_QUERY = '''
             ''' + BASE_QUERY + '''
         ) S
     GROUP BY
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap
+        ''' + GROUP_COLS_STR('S') + '''
     ORDER BY
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap
+        ''' + GROUP_COLS_STR('S') + '''
 '''
 
 # Get the best set of hyperparams for each data setting.
 # "Best" is determined by best puzzle AUROC.
 BEST_HYPERPARAMS = '''
     SELECT
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap
+        ''' + GROUP_COLS_STR('S') + '''
     FROM (
         SELECT
             S.*,
@@ -91,16 +70,7 @@ BEST_HYPERPARAMS = '''
         WHERE S.split = 0
         WINDOW RankWindow AS (
             PARTITION BY
-                S.method,
-                S.experiment,
-                S.dimension,
-                S.datasets,
-                S.strategy,
-                S.numTrain,
-                S.numTest,
-                S.numValid,
-                S.corruptChance,
-                S.overlap
+                ''' + GROUP_COLS_STR('S') + '''
             ORDER BY
                 S.puzzleAUROC,
                 S.puzzleAccuracy
@@ -108,30 +78,12 @@ BEST_HYPERPARAMS = '''
     ) S
     WHERE S.rank = 1
     ORDER BY
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap
+        ''' + GROUP_COLS_STR('S') + '''
 '''
 
 BEST_RUNS = '''
     SELECT
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap,
+        ''' + GROUP_COLS_STR('S') + ''',
         COUNT(S.split) AS numSplits,
         AVG(S.digitAccuracy) AS digitAccuracy_mean,
         STDEV(S.digitAccuracy) AS digitAccuracy_std,
@@ -156,27 +108,9 @@ BEST_RUNS = '''
             AND S.overlap = H.overlap
     WHERE S.split != 0
     GROUP BY
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap
+        ''' + GROUP_COLS_STR('S') + '''
     ORDER BY
-        S.method,
-        S.experiment,
-        S.dimension,
-        S.datasets,
-        S.strategy,
-        S.numTrain,
-        S.numTest,
-        S.numValid,
-        S.corruptChance,
-        S.overlap
+        ''' + GROUP_COLS_STR('S') + '''
 '''
 
 BOOL_COLUMNS = {
