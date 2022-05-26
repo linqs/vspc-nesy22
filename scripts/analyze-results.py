@@ -69,6 +69,32 @@ AGGREGATE_QUERY = '''
         S.overlap
 '''
 
+GRAPH_SIMPLE_DATASETS = '''
+    SELECT
+        S.method,
+        S.datasets,
+        S.numTrain,
+        S.numSplits,
+        S.digitAccuracy_mean,
+        S.digitAccuracy_std,
+        S.puzzleAccuracy_mean,
+        S.puzzleAccuracy_std,
+        S.puzzleAUROC_mean,
+        S.puzzleAUROC_std
+    FROM
+        (
+            ''' + AGGREGATE_QUERY + '''
+        ) S
+    WHERE
+        S.strategy = 'simple'
+        AND S.dimension = 4
+        AND S.overlap = 0.0
+        AND numTest = 100
+        AND numValid = 100
+        AND corruptChance = 0.5
+
+'''
+
 # Get the best set of hyperparams for each data setting.
 # "Best" is determined by best puzzle AUROC.
 BEST_HYPERPARAMS = '''
@@ -209,6 +235,10 @@ RUN_MODES = {
         AGGREGATE_QUERY,
         'Aggregate over split.',
     ),
+    'GRAPH_SIMPLE_DATASETS': (
+        GRAPH_SIMPLE_DATASETS,
+        'Get the data for the simple datasets graph.',
+    ),
     'BEST_HYPERPARAMS': (
         BEST_HYPERPARAMS,
         'Get the best hyperparams for each data setting.',
@@ -274,7 +304,7 @@ class StdevFunc:
             return None
         return math.sqrt(self.S / (self.k-2))
 
-def main(mode, resultsPath):
+def fetchQuery(mode, resultsPath):
     columns, data = fetchResults(resultsPath)
     if (len(data) == 0):
         return
@@ -303,13 +333,24 @@ def main(mode, resultsPath):
     connection.executemany("INSERT INTO Stats(%s) VALUES (%s)" % (', '.join(columns), ', '.join(['?'] * len(columns))), data)
 
     query = RUN_MODES[mode][0]
-    rows = connection.execute(query)
+    results = connection.execute(query)
 
-    print("\t".join([column[0] for column in rows.description]))
-    for row in rows:
-        print("\t".join(map(str, row)))
+    header = [column[0] for column in results.description]
+
+    rows = []
+    for row in results:
+        rows.append(list(row))
 
     connection.close()
+
+    return header, rows
+
+def main(mode, resultsPath):
+    header, rows = fetchQuery(mode, resultsPath)
+
+    print("\t".join(header))
+    for row in rows:
+        print("\t".join(map(str, row)))
 
 def _load_args(args):
     executable = args.pop(0)
