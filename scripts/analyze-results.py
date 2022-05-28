@@ -9,6 +9,7 @@ The input to this script should be the output from parse-results.py, ex:
 ```
 '''
 
+import argparse
 import math
 import os
 import sqlite3
@@ -19,6 +20,24 @@ BASE_QUERY = '''
     SELECT *
     FROM Stats
     WHERE puzzleAccuracy IS NOT NULL
+'''
+
+METHOD_NAME_MAP = '''
+    SELECT
+        'baseline-digit' AS method,
+        'Baseline Digit' AS name
+
+    UNION ALL
+
+    SELECT
+        'baseline-visual' AS method,
+        'Baseline Visual' AS name
+
+    UNION ALL
+
+    SELECT
+        'neupsl' AS method,
+        'NeuPSL' AS name
 '''
 
 GROUP_COLS = [
@@ -77,10 +96,39 @@ GRAPH_SIMPLE_DATASETS = '''
         S.strategy = 'simple'
         AND S.dimension = 4
         AND S.overlap = 0.0
+        AND numTrain <= 50
         AND numTest = 100
         AND numValid = 100
         AND corruptChance = 0.5
 
+'''
+
+TABLE_SIMPLE_DATASETS = '''
+    SELECT
+        UPPER(S.datasets) AS 'Data Source',
+        M.name AS 'Model',
+        SUBSTR(CAST(ROUND(S.puzzleAUROC_mean, 2) AS TEXT) || '00', 0, 5)
+            || ' ± '
+            || SUBSTR(CAST(ROUND(S.puzzleAUROC_std, 2) AS TEXT) || '00', 0, 5)
+            AS 'AuROC'
+    FROM
+        (
+            ''' + AGGREGATE_QUERY + '''
+        ) S
+        JOIN (
+            ''' + METHOD_NAME_MAP + '''
+        ) M ON S.method = M.method
+    WHERE
+        S.strategy = 'simple'
+        AND S.dimension = 4
+        AND S.overlap = 0.0
+        AND numTrain = 50
+        AND numTest = 100
+        AND numValid = 100
+        AND corruptChance = 0.5
+    ORDER BY
+        S.datasets,
+        S.method
 '''
 
 # Get the best set of hyperparams for each data setting.
@@ -172,6 +220,10 @@ RUN_MODES = {
     'GRAPH_SIMPLE_DATASETS': (
         GRAPH_SIMPLE_DATASETS,
         'Get the data for the simple datasets graph.',
+    ),
+    'TABLE_SIMPLE_DATASETS': (
+        TABLE_SIMPLE_DATASETS,
+        'Get the results for the simple table.',
     ),
     'BEST_HYPERPARAMS': (
         BEST_HYPERPARAMS,
@@ -279,31 +331,42 @@ def fetchQuery(mode, resultsPath):
 
     return header, rows
 
-def main(mode, resultsPath):
-    header, rows = fetchQuery(mode, resultsPath)
+def main(arguments):
+    header, rows = fetchQuery(arguments.mode, arguments.results)
+
+    if (arguments.latex):
+        print(" & ".join(header) + ' \\\\')
+        for row in rows:
+            print(" & ".join(map(str, row)) + ' \\\\')
+
+        return
 
     print("\t".join(header))
     for row in rows:
         print("\t".join(map(str, row)))
 
-def _load_args(args):
-    executable = args.pop(0)
-    if (len(args) != 2 or ({'h', 'help'} & {arg.lower().strip().replace('-', '') for arg in args})):
-        print("USAGE: python3 %s <results path> <mode>" % (executable), file = sys.stderr)
-        print("modes:", file = sys.stderr)
-        for (key, (query, description)) in RUN_MODES.items():
-            print("    %s - %s" % (key, description), file = sys.stderr)
-        sys.exit(1)
+def _load_args():
+    parser = argparse.ArgumentParser(description = 'Analyze already parsed results.')
 
-    resultsPath = args.pop(0)
-    if (not os.path.isfile(resultsPath)):
-        raise ValueError("Can't find the specified results path: " + resultsPath)
+    parser.add_argument('results',
+        action = 'store', type = str,
+        help = 'The path to the already parsed results.')
 
-    mode = args.pop(0).upper()
-    if (mode not in RUN_MODES):
-        raise ValueError("Unknown mode: '%s'." % (mode))
+    parser.add_argument('mode',
+        action = 'store', type = str,
+        choices = list(sorted(RUN_MODES.keys())),
+        help = 'The types of results to pull out.')
 
-    return mode, resultsPath
+    parser.add_argument('--latex', dest = 'latex',
+        action = 'store_true', default = False,
+        help = 'Make output more compatible with LaTeX.')
+
+    arguments = parser.parse_args()
+
+    if (not os.path.isfile(arguments.results)):
+        raise ValueError("Can't find the specified results path: " + arguments.results)
+
+    return arguments
 
 if (__name__ == '__main__'):
-    main(*_load_args(sys.argv))
+    main(_load_args())
