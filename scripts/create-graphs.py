@@ -25,17 +25,224 @@ DATASETS_ORDER = [
 ]
 
 METHOD_ORDER = [
-    'baseline-digit',
     'baseline-visual',
+    'baseline-digit',
     'neupsl',
 ]
 
+MODEL_ORDER = [
+    'Baseline Visual',
+    'Baseline Digit',
+    'NeuPSL',
+]
+
+GRAPH_FULL_SIMPLE = 'FULL_SIMPLE'
+GRAPH_OVERLAP = 'OVERLAP'
+GRAPH_CROSS = 'CROSS'
+GRAPHS = [GRAPH_FULL_SIMPLE, GRAPH_OVERLAP, GRAPH_CROSS]
+
+GRAPH_OVERLAP_FILENAME = 'overlap-bars.png'
+GRAPH_CROSS_FILENAME = 'cross-line.png'
+
+COLORS = {
+    'Baseline Visual': 'forestgreen',
+    'baseline-visual': 'forestgreen',
+    'Baseline Digit': 'tomato',
+    'baseline-digit': 'tomato',
+    'NeuPSL': 'mediumslateblue',
+    'neupsl': 'mediumslateblue',
+}
+
+BAR_WIDTH = 6
+GAP_BETWEEN_GROUPS = 5
+GAP_BETWEEN_SUBGROUPS = 2
+BAR_EDGE_COLOR = 'black'
+
+# Create line graphs of dataset x dataset.
+def createCrossGraphs(resultsPath, outDir):
+    headers, rows = analyze.fetchQuery('GRAPH_CROSS', resultsPath)
+    headerIndexes = {headers[i]: i for i in range(len(headers))}
+
+    DATA_SOURCE_ORDER = [
+        'MNIST',
+        'EMNIST',
+        'FMNIST',
+        'KMNIST',
+    ]
+
+    # Collect all the points.
+    # {(index1, index2): {method: {x: y, ...}, ...}, ...}
+    points = {}
+    for row in rows:
+        datasets = row[headerIndexes['Data Source']].split(',')
+        model = row[headerIndexes['Model']]
+        numTrain = row[headerIndexes['numTrain']]
+        auroc = row[headerIndexes['puzzleAUROC_mean']]
+        std = row[headerIndexes['puzzleAUROC_std']]
+
+        if (len(datasets) > 2):
+            continue
+
+        dataset1Index = DATA_SOURCE_ORDER.index(datasets[0])
+
+        dataset2Index = dataset1Index
+        if (len(datasets) == 2):
+            dataset2Index = DATA_SOURCE_ORDER.index(datasets[1])
+
+        # Use only the bottom triangle.
+        indexes = tuple(sorted((dataset1Index, dataset2Index), reverse = True))
+
+        if (indexes not in points):
+            points[indexes] = {}
+
+        if (model not in points[indexes]):
+            points[indexes][model] = {}
+
+        points[indexes][model][numTrain] = auroc
+
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 10))
+
+    for (indexes, data) in points.items():
+        for model in data:
+            xs = list(sorted(data[model]))
+            ys = [data[model][x] for x in xs]
+
+            axis[indexes].plot(xs, ys, label = model, color = COLORS[model])
+
+        axis[indexes].set_ylim(0.4, 0.9)
+
+    # Set titles (diag and left) and axis labels.
+    for i in range(len(DATA_SOURCE_ORDER)):
+        axis[i, i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'center')
+        axis[i, 0].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.50, y = 0.425)
+        axis[i, 0].set_ylabel('AuROC', fontsize = 'large')
+
+        axis[(len(DATA_SOURCE_ORDER) - 1), i].set_xlabel('Number of Puzzles', fontsize = 'large')
+
+    for i in range(len(DATA_SOURCE_ORDER)):
+        for j in range(len(DATA_SOURCE_ORDER)):
+            if (i < j):
+                figure.delaxes(axis[i, j])
+
+    axis[0, 0].legend(bbox_to_anchor = (4.50, 1.01), loc = 'upper right', fontsize = 'x-large')
+
+    figure.tight_layout()
+
+    matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_CROSS_FILENAME))
+    matplotlib.pyplot.show()
+
+# Create graphs of overlap per dataset and method.
+def createOverlapGraphs(resultsPath, outDir):
+    headers, rows = analyze.fetchQuery('GRAPH_OVERLAP', resultsPath)
+    headerIndexes = {headers[i]: i for i in range(len(headers))}
+
+    DATA_SOURCE_ORDER = [
+        'MNIST',
+        'EMNIST',
+        'FMNIST',
+        'KMNIST',
+    ]
+
+    NUM_UNIQUE_IMAGES_ORDERING = [80, 160, 320]
+    NUM_PUZZLE_ORDERING = {
+        80: [-1, 5, 10],
+        160: [10, 20, 30],
+        320: [20, 30, 40],
+    }
+
+    # 9 bars, 2 spaces between the groups, and 2 end caps.
+    IMAGE_GROUP_SIZE = 9 * BAR_WIDTH + 2 * GAP_BETWEEN_SUBGROUPS + 2 * GAP_BETWEEN_GROUPS
+
+    # 3 bars, 1 space between the groups.
+    PUZZLE_GROUP_SIZE = 3 * BAR_WIDTH + GAP_BETWEEN_SUBGROUPS
+
+    INITIAL_SPACE = -5
+
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), 1, figsize = (20, 10))
+
+    # We know the exact position of each bar/row as it comes out, so no need for pre-processing.
+
+    # {dataset: {model: handle, ...}, ...}
+    legendHandles = {dataset: {} for dataset in DATA_SOURCE_ORDER}
+
+    xTicksMajorPositions = []
+    xTicksMajorLabels = []
+
+    xTicksMinorPositions = []
+    xTicksMinorLabels = []
+
+    for row in rows:
+        model = row[headerIndexes['Model']]
+        datasets = row[headerIndexes['Data Source']]
+        numUniqueImages = int(row[headerIndexes['Number of Unique Images']])
+        numPuzzles = row[headerIndexes['Number of Puzzles']]
+        auroc = row[headerIndexes['puzzleAUROC_mean']]
+        std = row[headerIndexes['puzzleAUROC_std']]
+
+        datasetsIndex = DATA_SOURCE_ORDER.index(datasets)
+        imagesIndex = NUM_UNIQUE_IMAGES_ORDERING.index(numUniqueImages)
+        puzzlesIndex = NUM_PUZZLE_ORDERING[numUniqueImages].index(numPuzzles)
+        modelIndex = MODEL_ORDER.index(model)
+
+        position = INITIAL_SPACE \
+                + imagesIndex * IMAGE_GROUP_SIZE \
+                + puzzlesIndex * PUZZLE_GROUP_SIZE \
+                + modelIndex * BAR_WIDTH
+
+        if (datasetsIndex == 0 and modelIndex == 1):
+            xTicksMinorPositions.append(position)
+            xTicksMinorLabels.append(numPuzzles)
+
+            if (puzzlesIndex == 1):
+                # Major ticks will hide minor if they have the same position.
+                xTicksMajorPositions.append(position + 0.01)
+                xTicksMajorLabels.append("Number of Puzzles\n$\\mathbf{%d \\, Unique \\, Images}$" % (numUniqueImages))
+
+        bar = axis[datasetsIndex].bar(x = position, width = BAR_WIDTH,
+                height = auroc, yerr = std,
+                color = COLORS[model], edgecolor = BAR_EDGE_COLOR)
+
+        if (model not in legendHandles[datasets]):
+            legendHandles[datasets][model] = bar
+
+    for i in range(len(DATA_SOURCE_ORDER)):
+        # An empty bar to put in an empty space at the beginning.
+        axis[i].bar(x = 0, width = 0.01, height = 0)
+
+        axis[i].set_ylim(0.4, 0.9)
+        axis[i].set_ylabel('AuROC')
+
+        axis[i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', x = 0.475)
+
+        handles = []
+        labels = []
+        for (model, handle) in legendHandles[DATA_SOURCE_ORDER[i]].items():
+            labels.append(model)
+            handles.append(handle)
+
+        axis[i].legend(handles, labels, loc = 'center left')
+
+        axis[i].set_xticks(ticks = xTicksMinorPositions, labels = xTicksMinorLabels, minor = True)
+        axis[i].tick_params(axis = 'x', which = 'minor', size = 1)
+        axis[i].set_xticks(ticks = xTicksMajorPositions, labels = xTicksMajorLabels, minor = False)
+        axis[i].tick_params(axis = 'x', which = 'major', pad = 20, size = 0)
+
+        # Put in vertical lines.
+        # HACK(eriq): Position is strange.
+        for j in range(1, 3):
+            axis[i].axvline(x = INITIAL_SPACE + (j * IMAGE_GROUP_SIZE) - 8, color = 'black')
+
+    figure.tight_layout(h_pad = 2)
+
+    matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_OVERLAP_FILENAME))
+    matplotlib.pyplot.show()
+
 # Create graphs of accuracy per dataset on the simple setting.
-def createSimpleDatasetGraphs(resultsPath, ourDir):
+def createSimpleDatasetGraphs(resultsPath, outDir):
     headers, rows = analyze.fetchQuery('GRAPH_SIMPLE_DATASETS', resultsPath)
     headerIndexes = {headers[i]: i for i in range(len(headers))}
 
-    #{datasets: {method: [(numPuzzles, accuracy, AUROC), ...], ...}, ...}
+    # {datasets: {method: [(numPuzzles, accuracy, AUROC), ...], ...}, ...}
     data = {}
 
     for i in range(len(rows)):
@@ -111,13 +318,22 @@ def createSimpleDatasetGraphs(resultsPath, ourDir):
 
     matplotlib.pyplot.show()
 
-def main(resultsPath, outDir):
-    createSimpleDatasetGraphs(resultsPath, outDir)
+def main(resultsPath, outDir, graph):
+    os.makedirs(outDir, exist_ok = True)
+
+    if (graph == GRAPH_FULL_SIMPLE):
+        createSimpleDatasetGraphs(resultsPath, outDir)
+    elif (graph == GRAPH_OVERLAP):
+        createOverlapGraphs(resultsPath, outDir)
+    elif (graph == GRAPH_CROSS):
+        createCrossGraphs(resultsPath, outDir)
+    else:
+        raise ValueError("Unknown graph type '%s'. Expected one of [%s]." % (graph, ', '.join(GRAPHS)))
 
 def _load_args(args):
     executable = args.pop(0)
-    if (len(args) != 2 or ({'h', 'help'} & {arg.lower().strip().replace('-', '') for arg in args})):
-        print("USAGE: python3 %s <results path> <out dir>" % (executable), file = sys.stderr)
+    if (len(args) != 3 or ({'h', 'help'} & {arg.lower().strip().replace('-', '') for arg in args})):
+        print("USAGE: python3 %s <results path> <out dir> <graph>" % (executable), file = sys.stderr)
         sys.exit(1)
 
     resultsPath = args.pop(0)
@@ -126,7 +342,11 @@ def _load_args(args):
 
     outDir = args.pop(0)
 
-    return resultsPath, outDir
+    graph = args.pop(0).upper()
+    if (graph not in GRAPHS):
+        raise ValueError("Unknown graph type '%s'. Expected one of [%s]." % (graph, ', '.join(GRAPHS)))
+
+    return resultsPath, outDir, graph
 
 if (__name__ == '__main__'):
     main(*_load_args(sys.argv))

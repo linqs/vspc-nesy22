@@ -15,12 +15,7 @@ import os
 import sqlite3
 import sys
 
-# Get all results with an actual value (e.g. ignore incomplete runs).
-BASE_QUERY = '''
-    SELECT *
-    FROM Stats
-    WHERE puzzleAccuracy IS NOT NULL
-'''
+GROUP_COLS_STR = lambda prefix: ', '.join([prefix + '.' + col for col in GROUP_COLS])
 
 METHOD_NAME_MAP = '''
     SELECT
@@ -53,7 +48,14 @@ GROUP_COLS = [
     'overlap',
 ]
 
-GROUP_COLS_STR = lambda prefix: ', '.join([prefix + '.' + col for col in GROUP_COLS])
+# Get all results with an actual value (e.g. ignore incomplete runs).
+BASE_QUERY = '''
+    SELECT *
+    FROM Stats S
+    WHERE puzzleAccuracy IS NOT NULL
+    ORDER BY
+        ''' + GROUP_COLS_STR('S') + '''
+'''
 
 # Aggregate over splits and iterations.
 AGGREGATE_QUERY = '''
@@ -100,7 +102,60 @@ GRAPH_SIMPLE_DATASETS = '''
         AND numTest = 100
         AND numValid = 100
         AND corruptChance = 0.5
+'''
 
+TABLE_OVERLAP = '''
+    SELECT
+        S.*,
+        S.[Number of Unique Images] / S.[Number of Images] AS 'Percentage Unique'
+    FROM
+        (
+            SELECT
+                UPPER(S.datasets) AS 'Data Source',
+                M.name AS 'Model',
+                S.numTrain AS 'Number of Puzzles',
+                S.numTrain * 16 AS 'Number of Images',
+                S.numTrain * 16 * (1.0 / (1.0 + S.overlap)) AS 'Number of Unique Images',
+                S.numTrain * 16 * (1.0 / (1.0 + S.overlap)) / 4 AS 'Number of Unique Digit Instances',
+                S.overlap,
+                S.numSplits,
+                S.puzzleAUROC_mean,
+                S.puzzleAUROC_std
+            FROM
+                (
+                    ''' + AGGREGATE_QUERY + '''
+                ) S
+                JOIN (
+                    ''' + METHOD_NAME_MAP + '''
+                ) M ON S.method = M.method
+            WHERE
+                S.strategy = 'simple'
+                AND S.dimension = 4
+                AND numTest = 100
+                AND numValid = 100
+                AND corruptChance = 0.5
+        ) S
+    ORDER BY
+        S.[Data Source],
+        S.[Number of Unique Images],
+        S.Model,
+        S.[Number of Puzzles]
+'''
+
+GRAPH_OVERLAP = '''
+    SELECT
+        O.*
+    FROM
+        (
+            ''' + TABLE_OVERLAP + '''
+        ) O
+    WHERE
+        O.[Number of Unique Images] IN (80, 160, 320)
+    ORDER BY
+        O.[Data Source],
+        O.[Number of Unique Images],
+        O.[Number of Puzzles],
+        O.Model
 '''
 
 TABLE_SIMPLE_DATASETS = '''
@@ -126,6 +181,42 @@ TABLE_SIMPLE_DATASETS = '''
         AND numTest = 100
         AND numValid = 100
         AND corruptChance = 0.5
+    ORDER BY
+        S.datasets,
+        S.method
+'''
+
+GRAPH_CROSS = '''
+    SELECT
+        UPPER(S.datasets) AS 'Data Source',
+        M.name AS 'Model',
+        s.numTrain,
+        S.puzzleAUROC_mean,
+        S.puzzleAUROC_std
+    FROM
+        (
+            SELECT
+                S.datasets,
+                S.method,
+                s.numTrain,
+                S.puzzleAUROC_mean,
+                S.puzzleAUROC_std
+            FROM
+                (
+                    ''' + AGGREGATE_QUERY + '''
+                ) S
+            WHERE
+                S.strategy = 'r_split'
+                AND S.dimension = 4
+                AND S.numTrain <= 50
+                AND S.numTest = 100
+                AND S.numValid = 100
+                AND S.corruptChance = 0.5
+                AND S.overlap = 0.0
+        ) S
+        JOIN (
+            ''' + METHOD_NAME_MAP + '''
+        ) M ON S.method = M.method
     ORDER BY
         S.datasets,
         S.method
@@ -221,9 +312,21 @@ RUN_MODES = {
         GRAPH_SIMPLE_DATASETS,
         'Get the data for the simple datasets graph.',
     ),
+    'GRAPH_OVERLAP': (
+        GRAPH_OVERLAP,
+        'Get the data for the overlap graph.',
+    ),
+    'GRAPH_CROSS': (
+        GRAPH_CROSS,
+        'Get the data for the cross graph.',
+    ),
     'TABLE_SIMPLE_DATASETS': (
         TABLE_SIMPLE_DATASETS,
         'Get the results for the simple table.',
+    ),
+    'TABLE_OVERLAP': (
+        TABLE_OVERLAP,
+        'Get the data for the overlap table.',
     ),
     'BEST_HYPERPARAMS': (
         BEST_HYPERPARAMS,
