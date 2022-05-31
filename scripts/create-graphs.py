@@ -100,7 +100,7 @@ def createCrossGraphs(resultsPath, outDir):
 
         points[indexes][model][numTrain] = auroc
 
-    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 7.5))
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 5.50))
 
     for (indexes, data) in points.items():
         for model in data:
@@ -114,7 +114,7 @@ def createCrossGraphs(resultsPath, outDir):
     # Set titles (diag and left) and axis labels.
     for i in range(len(DATA_SOURCE_ORDER)):
         axis[i, i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'center')
-        axis[i, 0].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.50, y = 0.425)
+        axis[i, 0].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.45, y = 0.25)
         axis[i, 0].set_ylabel('AuROC', fontsize = 'large')
 
         axis[(len(DATA_SOURCE_ORDER) - 1), i].set_xlabel('Number of Puzzles', fontsize = 'large')
@@ -123,10 +123,13 @@ def createCrossGraphs(resultsPath, outDir):
         for j in range(len(DATA_SOURCE_ORDER)):
             if (i < j):
                 figure.delaxes(axis[i, j])
+            else:
+                # axis[i, j].tick_params('y', 'both', False, length = 1)
+                axis[i, j].tick_params(length = 2, labelsize = 8.0)
 
     axis[0, 0].legend(bbox_to_anchor = (4.50, 1.01), loc = 'upper right', fontsize = 'x-large')
 
-    figure.tight_layout()
+    figure.tight_layout(h_pad = 2.0)
 
     matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_CROSS_FILENAME), bbox_inches = 'tight', transparent = True, pad_inches = 0.1)
     matplotlib.pyplot.show()
