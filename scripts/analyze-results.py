@@ -15,6 +15,9 @@ import os
 import sqlite3
 import sys
 
+# Use this split if we have additional hyperparams.
+VALID_SPLIT = 1
+
 GROUP_COLS_STR = lambda prefix: ', '.join([prefix + '.' + col for col in GROUP_COLS])
 
 METHOD_NAME_MAP = '''
@@ -72,6 +75,8 @@ AGGREGATE_QUERY = '''
         (
             ''' + BASE_QUERY + '''
         ) S
+    WHERE
+        S.split != ''' + str(VALID_SPLIT) + '''
     GROUP BY
         ''' + GROUP_COLS_STR('S') + '''
     ORDER BY
@@ -222,62 +227,6 @@ GRAPH_CROSS = '''
         S.method
 '''
 
-# Get the best set of hyperparams for each data setting.
-# "Best" is determined by best puzzle AUROC.
-BEST_HYPERPARAMS = '''
-    SELECT
-        ''' + GROUP_COLS_STR('S') + '''
-    FROM (
-        SELECT
-            S.*,
-            ROW_NUMBER() OVER RankWindow AS rank
-        FROM Stats S
-        WHERE S.split = 0
-        WINDOW RankWindow AS (
-            PARTITION BY
-                ''' + GROUP_COLS_STR('S') + '''
-            ORDER BY
-                S.puzzleAUROC,
-                S.puzzleAccuracy
-        )
-    ) S
-    WHERE S.rank = 1
-    ORDER BY
-        ''' + GROUP_COLS_STR('S') + '''
-'''
-
-BEST_RUNS = '''
-    SELECT
-        ''' + GROUP_COLS_STR('S') + ''',
-        COUNT(S.split) AS numSplits,
-        AVG(S.digitAccuracy) AS digitAccuracy_mean,
-        STDEV(S.digitAccuracy) AS digitAccuracy_std,
-        AVG(S.puzzleAccuracy) AS puzzleAccuracy_mean,
-        STDEV(S.puzzleAccuracy) AS puzzleAccuracy_std,
-        AVG(S.puzzleAUROC) AS puzzleAUROC_mean,
-        STDEV(S.puzzleAUROC) AS puzzleAUROC_std
-    FROM
-        Stats S
-        JOIN (
-            ''' + BEST_HYPERPARAMS + '''
-        ) H ON
-            S.method = H.method
-            AND S.experiment = H.experiment
-            AND S.dimension = H.dimension
-            AND S.datasets = H.datasets
-            AND S.strategy = H.strategy
-            AND S.numTrain = H.numTrain
-            AND S.numTest = H.numTest
-            AND S.numValid = H.numValid
-            AND S.corruptChance = H.corruptChance
-            AND S.overlap = H.overlap
-    WHERE S.split != 0
-    GROUP BY
-        ''' + GROUP_COLS_STR('S') + '''
-    ORDER BY
-        ''' + GROUP_COLS_STR('S') + '''
-'''
-
 BOOL_COLUMNS = {
 }
 
@@ -327,14 +276,6 @@ RUN_MODES = {
     'TABLE_OVERLAP': (
         TABLE_OVERLAP,
         'Get the data for the overlap table.',
-    ),
-    'BEST_HYPERPARAMS': (
-        BEST_HYPERPARAMS,
-        'Get the best hyperparams for each data setting.',
-    ),
-    'BEST_RUNS': (
-        BEST_RUNS,
-        'Get the best non-validation runs.',
     ),
 }
 

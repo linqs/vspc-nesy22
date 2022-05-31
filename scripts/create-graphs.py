@@ -100,7 +100,7 @@ def createCrossGraphs(resultsPath, outDir):
 
         points[indexes][model][numTrain] = auroc
 
-    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 10))
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 7.5))
 
     for (indexes, data) in points.items():
         for model in data:
@@ -128,7 +128,7 @@ def createCrossGraphs(resultsPath, outDir):
 
     figure.tight_layout()
 
-    matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_CROSS_FILENAME))
+    matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_CROSS_FILENAME), bbox_inches = 'tight', transparent = True, pad_inches = 0.1)
     matplotlib.pyplot.show()
 
 # Create graphs of overlap per dataset and method.
@@ -158,7 +158,7 @@ def createOverlapGraphs(resultsPath, outDir):
 
     INITIAL_SPACE = -5
 
-    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), 1, figsize = (20, 10))
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), 1, figsize = (20, 7.5))
 
     # We know the exact position of each bar/row as it comes out, so no need for pre-processing.
 
@@ -212,7 +212,7 @@ def createOverlapGraphs(resultsPath, outDir):
         axis[i].set_ylim(0.4, 0.9)
         axis[i].set_ylabel('AuROC')
 
-        axis[i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', x = 0.475)
+        axis[i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.080, y = 0.25)
 
         handles = []
         labels = []
@@ -232,9 +232,8 @@ def createOverlapGraphs(resultsPath, outDir):
         for j in range(1, 3):
             axis[i].axvline(x = INITIAL_SPACE + (j * IMAGE_GROUP_SIZE) - 8, color = 'black')
 
-    figure.tight_layout(h_pad = 2)
-
-    matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_OVERLAP_FILENAME))
+    figure.tight_layout(h_pad = 1)
+    matplotlib.pyplot.savefig(os.path.join(outDir, GRAPH_OVERLAP_FILENAME), bbox_inches = 'tight', transparent = True, pad_inches = 0.1)
     matplotlib.pyplot.show()
 
 # Create graphs of accuracy per dataset on the simple setting.
