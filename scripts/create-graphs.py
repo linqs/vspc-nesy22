@@ -100,7 +100,7 @@ def createCrossGraphs(resultsPath, outDir):
 
         points[indexes][model][numTrain] = auroc
 
-    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 5.50))
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), len(DATA_SOURCE_ORDER), figsize = (20, 8.00))
 
     for (indexes, data) in points.items():
         for model in data:
@@ -114,8 +114,8 @@ def createCrossGraphs(resultsPath, outDir):
     # Set titles (diag and left) and axis labels.
     for i in range(len(DATA_SOURCE_ORDER)):
         axis[i, i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'center')
-        axis[i, 0].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.45, y = 0.25)
-        axis[i, 0].set_ylabel('AuROC', fontsize = 'large')
+        axis[i, 0].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.45, y = 0.35)
+        axis[i, 0].set_ylabel('AuROC', fontsize = 'large', y = 0.50)
 
         axis[(len(DATA_SOURCE_ORDER) - 1), i].set_xlabel('Number of Puzzles', fontsize = 'large')
 
@@ -161,7 +161,7 @@ def createOverlapGraphs(resultsPath, outDir):
 
     INITIAL_SPACE = -5
 
-    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), 1, figsize = (20, 7.5))
+    figure, axis = matplotlib.pyplot.subplots(len(DATA_SOURCE_ORDER), 1, figsize = (20, 8.25))
 
     # We know the exact position of each bar/row as it comes out, so no need for pre-processing.
 
@@ -213,7 +213,7 @@ def createOverlapGraphs(resultsPath, outDir):
         axis[i].bar(x = 0, width = 0.01, height = 0)
 
         axis[i].set_ylim(0.4, 0.9)
-        axis[i].set_ylabel('AuROC')
+        axis[i].set_ylabel('AuROC', y = 0.45)
 
         axis[i].set_title(DATA_SOURCE_ORDER[i], fontsize = 'x-large', loc = 'left', x = -0.080, y = 0.25)
 
