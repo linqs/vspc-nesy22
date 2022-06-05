@@ -4,6 +4,7 @@
 
 import argparse
 import glob
+import gzip
 import json
 import os
 import re
@@ -21,10 +22,10 @@ DATA_DIR = os.path.join(THIS_DIR, '..', 'data', EXPERIMENT)
 
 OUT_FILENAME = 'out-baseline.json'
 OUT_MODEL_DIRNAME = 'baseline-model-tf'
-OUT_TRAIN_PREDICTIONS_FILENAME = 'baseline-train-predictions.txt'
-OUT_TRAIN_LABELS_FILENAME = 'baseline-train-labels.txt'
-OUT_TEST_PREDICTIONS_FILENAME = 'baseline-test-predictions.txt'
-OUT_TEST_LABELS_FILENAME = 'baseline-test-labels.txt'
+OUT_TRAIN_PREDICTIONS_FILENAME = 'baseline-train-predictions.txt.gz'
+OUT_TRAIN_LABELS_FILENAME = 'baseline-train-labels.txt.gz'
+OUT_TEST_PREDICTIONS_FILENAME = 'baseline-test-predictions.txt.gz'
+OUT_TEST_LABELS_FILENAME = 'baseline-test-labels.txt.gz'
 
 BASELINE_NAME_DIGIT = 'baseline-digit'
 BASELINE_NAME_VISUAL = 'baseline-visual'
@@ -52,10 +53,16 @@ NEURAL_LEARNING_RATE = 0.001
 # MNIST images are 28 x 28 = 784.
 MNIST_DIMENSION = 28
 
-def writeFile(path, data, dtype = str):
-    with open(path, 'w') as file:
-        for row in data:
-            file.write('\t'.join([str(dtype(item)) for item in row]) + "\n")
+def writeFile(path, data, dtype = str, compress = False):
+    if (compress):
+        file = gzip.open(path, 'wt')
+    else:
+        file = open(path, 'w')
+
+    for row in data:
+        file.write('\t'.join([str(dtype(item)) for item in row]) + "\n")
+
+    file.close()
 
 def buildModel(method, dimension):
     assert(method in BASELINE_NAMES)
@@ -201,11 +208,11 @@ def runBaseline(method, baseDataDir, dataDir, baseOutDir, force):
 
     model.save(os.path.join(outDir, OUT_MODEL_DIRNAME), save_format = 'tf')
 
-    writeFile(os.path.join(outDir, OUT_TRAIN_PREDICTIONS_FILENAME), trainPredictions, float)
-    writeFile(os.path.join(outDir, OUT_TRAIN_LABELS_FILENAME), trainLabels, int)
+    writeFile(os.path.join(outDir, OUT_TRAIN_PREDICTIONS_FILENAME), trainPredictions, dtype = float, compress = True)
+    writeFile(os.path.join(outDir, OUT_TRAIN_LABELS_FILENAME), trainLabels, dtype = int, compress = True)
 
-    writeFile(os.path.join(outDir, OUT_TEST_PREDICTIONS_FILENAME), testPredictions, float)
-    writeFile(os.path.join(outDir, OUT_TEST_LABELS_FILENAME), testLabels, int)
+    writeFile(os.path.join(outDir, OUT_TEST_PREDICTIONS_FILENAME), testPredictions, dtype = float, compress = True)
+    writeFile(os.path.join(outDir, OUT_TEST_LABELS_FILENAME), testLabels, dtype = int, compress = True)
 
     with open(optionsPath, 'w') as file:
         json.dump(results, file, indent = 4)
