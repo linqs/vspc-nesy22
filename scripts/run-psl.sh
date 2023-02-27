@@ -11,7 +11,8 @@ readonly BASE_OUT_DIR="${THIS_DIR}/../results"
 readonly DATA_DIR="${THIS_DIR}/../data/${EXPERIMENT_NAME}"
 readonly CLI_DIR="${THIS_DIR}/../cli"
 
-readonly ADDITIONAL_PSL_OPTIONS='--postgres psl'
+# readonly ADDITIONAL_PSL_OPTIONS='--postgres psl'
+readonly ADDITIONAL_PSL_OPTIONS=''
 
 readonly SPLITS=$(seq -w 01 11)
 
@@ -49,11 +50,6 @@ function run() {
     # Splits are already specified in the data path, but do this loop so we complete full splits first.
     for split in ${SPLITS} ; do
         for optionsPath in $(find "${DATA_DIR}" -name options.json | grep "split::${split}" | sort) ; do
-            # Skip large puzzles for now.
-            if [[ "${optionsPath}" =~ dimension::9 ]] ; then
-                continue
-            fi
-
             local baseParamPath=$(dirname "${optionsPath}" | sed "s#^.*data/${EXPERIMENT_NAME}/##")
             local paramPath="${baseParamPath}"
             local options="${ADDITIONAL_PSL_OPTIONS}"

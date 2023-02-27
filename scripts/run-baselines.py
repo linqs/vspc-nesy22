@@ -17,6 +17,7 @@ EXPERIMENT = 'vspc'
 
 THIS_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 DEFAULT_RESULTS_DIR = os.path.join(THIS_DIR, '..', 'results')
+DEFAULT_RAW_DATA_DIR = os.path.join(THIS_DIR, '..', 'data', 'raw')
 DATA_DIR = os.path.join(THIS_DIR, '..', 'data', EXPERIMENT)
 
 OUT_FILENAME = 'out-baseline.json'
@@ -221,8 +222,8 @@ def main(arguments):
 def _load_args(args):
     parser = argparse.ArgumentParser(description = 'Run a CNN baseline for VSPC datasets.')
 
-    parser.add_argument('source',
-        action = 'store', type = str,
+    parser.add_argument('--source', dest = 'source',
+        action = 'store', type = str, default = DEFAULT_RAW_DATA_DIR,
         help = 'The existing base VSPC data directory (all subdirectories will be run).')
 
     parser.add_argument('--force', dest = 'force',

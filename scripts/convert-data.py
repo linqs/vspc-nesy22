@@ -14,6 +14,7 @@ import pslpython.neupsl
 import tensorflow
 
 THIS_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+DEFAULT_RAW_DATA_DIR = os.path.join(THIS_DIR, '..', 'data', 'raw')
 DEFAULT_DATA_DIR = os.path.join(THIS_DIR, '..', 'data', 'vspc')
 
 UNSUPPORTED_STRATEGIES = ['r_puzzle', 'r_cell', 'transfer']
@@ -277,16 +278,19 @@ def fetchSourceDirs(baseDir):
     return dirs
 
 def main(arguments):
-    sourceDirs = fetchSourceDirs(arguments.source)
+    source = os.path.abspath(os.path.realpath(arguments.source))
+    outDir = os.path.abspath(os.path.realpath(arguments.outDir))
+
+    sourceDirs = fetchSourceDirs(source)
 
     for sourceDir in sourceDirs:
-        convertDir(sourceDir, arguments.source, arguments.outDir, arguments.force)
+        convertDir(sourceDir, source, outDir, arguments.force)
 
 def _load_args():
     parser = argparse.ArgumentParser(description = 'Convert all VSPC data directories into PSL data directories.')
 
-    parser.add_argument('source',
-        action = 'store', type = str,
+    parser.add_argument('--source', dest = 'source',
+        action = 'store', type = str, default = DEFAULT_RAW_DATA_DIR,
         help = 'The existing base VSPC data directory (all subdirectories will be converted).')
 
     parser.add_argument('--force', dest = 'force',
