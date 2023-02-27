@@ -16,9 +16,9 @@ but this README will use the defaults.
 ### Setting up the Data
 
 After you get the data, we now need to put it in the `data` directory.
-Move your data (starting with the `dimension::*` dir(s) into the `data/raw` directory.
+Move your data (starting with the `dimension::*` dir(s)) into the `data/raw` directory.
 
-For exaple the sample dataset (with overlap) above will make a data directory like:
+For example the sample dataset (with overlap) above will make a data directory like:
 ```
 data
 └── raw
@@ -128,7 +128,7 @@ All results will be stored in the `results` directory.
 
 ### Looking at Results
 
-All results are stored (by defualt) in the `results` directory.
+All results are stored (by default) in the `results` directory.
 
 You an use the `parse-results` script to pull out most the values you should need:
 ```
