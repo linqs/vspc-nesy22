@@ -35,7 +35,7 @@ function run_psl() {
         cd "${CLI_DIR}"
 
         # Run PSL.
-        /usr/bin/time -v --output="${timePath}" ./run.sh ${extraOptions} > "${outPath}" 2> "${errPath}"
+        time ./run.sh ${extraOptions} > "${outPath}" 2> "${errPath}"
 
         # Copy any artifacts into the output directory.
         cp -r inferred-predicates "${outDir}/"
@@ -55,7 +55,7 @@ function run() {
             local options="${ADDITIONAL_PSL_OPTIONS}"
 
             # Change the .data files to use the current settings.
-            sed -i "s#${originalParamPath}#${baseParamPath}#" "${CLI_DIR}/visual-sudoku-"{learn,eval}".data"
+            sed -i'' -e "s#${originalParamPath}#${baseParamPath}#" "${CLI_DIR}/visual-sudoku-"{learn,eval}".data"
 
             local outDir="${BASE_OUT_DIR}/experiment::${EXPERIMENT_NAME}/method::neupsl/${paramPath}"
 
@@ -63,7 +63,7 @@ function run() {
             run_psl "${outDir}" "${options}"
 
             # Reset the .data files.
-            sed -i "s#${baseParamPath}#${originalParamPath}#" "${CLI_DIR}/visual-sudoku-"{learn,eval}".data"
+            sed -i'' -e "s#${baseParamPath}#${originalParamPath}#" "${CLI_DIR}/visual-sudoku-"{learn,eval}".data"
         done
     done
 }
