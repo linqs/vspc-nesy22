@@ -73,17 +73,17 @@ def parseLog(logPath):
             if (match is not None):
                 results['runtime'] = time
 
-            match = re.search(r'INFO  org.linqs.psl.cli.Launcher  - Evaluation results for PREDICTEDNUMBER -- Categorical Accuracy: ([\d\.]+)', line)
+            match = re.search(r'INFO  org.linqs.psl.cli.Launcher  - Evaluation results for PREDICTEDNUMBER -- Categorical Accuracy: ([\d\.,]+)', line)
             if (match is not None):
-                results['digitAccuracy'] = float(match.group(1))
+                results['digitAccuracy'] = float(match.group(1).replace(',', '.'))
 
-            match = re.search(r'INFO  org.linqs.psl.cli.Launcher  - Evaluation results for VIOLATION -- Accuracy: ([\d\.]+), ', line)
+            match = re.search(r'INFO  org.linqs.psl.cli.Launcher  - Evaluation results for VIOLATION -- Accuracy: ([\d\.,]+), ', line)
             if (match is not None):
-                results['puzzleAccuracy'] = float(match.group(1))
+                results['puzzleAccuracy'] = float(match.group(1).replace(',', '.'))
 
-            match = re.search(r'INFO  org.linqs.psl.cli.Launcher  - Evaluation results for VIOLATION -- AUROC: ([\d\.]+),', line)
+            match = re.search(r'INFO  org.linqs.psl.cli.Launcher  - Evaluation results for VIOLATION -- AUROC: ([\d\.,]+),', line)
             if (match is not None):
-                results['puzzleAUROC'] = float(match.group(1))
+                results['puzzleAUROC'] = float(match.group(1).replace(',', '.'))
 
     # Check for an unfinished run.
     if ('runtime' not in results):
